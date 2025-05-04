@@ -30,11 +30,12 @@ function basicAuth(req, res, next) {
   next();
 }
 
+// نقطة النهاية للتحقق من العميل
 app.post('/check-customer', basicAuth, async (req, res) => {
   try {
-    const { MobileNo } = req.body;
+    const { MobileNo, CustomerZone } = req.body;
 
-    if (!MobileNo) {
+    if (!MobileNo || !CustomerZone) {
       return invalidResponse(res);
     }
 
@@ -64,9 +65,12 @@ app.post('/check-customer', basicAuth, async (req, res) => {
     const found = result.find(entry => entry.document);
 
     if (found) {
+      const documentPath = found.document.name;
+      const documentId = documentPath.split('/').pop();
+
       return res.json({
         Code: "1",
-        SCustID: null,
+        SCustID: documentId,
         DescriptionAr: "تم التحقق من تفاصيل العميل بنجاح",
         DescriptionEn: "Customer details verified successfully"
       });
@@ -85,7 +89,7 @@ app.post('/check-customer', basicAuth, async (req, res) => {
   }
 });
 
-// ردود ثابتة
+// ردود المساعدة
 function unauthorizedResponse(res) {
   return res.status(401).json({
     Code: "2",
@@ -107,5 +111,5 @@ function invalidResponse(res) {
 // تشغيل السيرفر
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
-  console.log(`API running on port ${PORT}`);
+  console.log(`✅ API running on http://localhost:${PORT}`);
 });
